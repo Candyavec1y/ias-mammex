@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MAMMEX · Interface expert</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/expert">
+    <svg class="brand-mark" viewBox="0 0 24 32" aria-hidden="true"><path d="M12 3c-3 0-5 2.2-5 5 0 2.3 1.4 4.8 3 7.2L3.5 26.5l3.4 2.2L12 20.4l5.1 8.3 3.4-2.2L14 15.2c1.6-2.4 3-4.9 3-7.2 0-2.8-2-5-5-5zm0 3c1.2 0 2 .9 2 2 0 1.3-.8 2.9-2 4.7-1.2-1.8-2-3.4-2-4.7 0-1.1.8-2 2-2z" fill="currentColor"/></svg>
+    <span class="brand-name">MAMMEX</span>
+    <span class="brand-sub">Interface expert · base de connaissances</span>
+  </a>
+  <span class="spacer"></span>
+  <span class="pill hidden" id="who"></span>
+  <a class="toplink" href="/">Interface médecin</a>
+</header>
+
+<main id="app">
+  <section id="login-view" class="card card-pad login">
+    <h1 style="font-size:20px">Accès expert</h1>
+    <p class="muted" style="font-size:14px;margin:6px 0 4px">Réservé au cogniticien et au sénologue-expert. Chaque modification est enregistrée
+      comme une nouvelle version, avec son auteur, sa date et son motif.</p>
+    <form id="login-form">
+      <label for="lg-nom">Votre nom</label>
+      <input id="lg-nom" autocomplete="name" required placeholder="ex. Dr Martin, sénologue">
+      <label for="lg-code">Code d'accès</label>
+      <input id="lg-code" type="password" required>
+      <div style="margin-top:16px"><button class="btn primary" type="submit">Se connecter</button></div>
+      <p class="muted" style="font-size:12.5px;margin:14px 0 0">Le code est affiché dans la fenêtre de lancement et modifiable dans <span class="mono">data/config.json</span>.</p>
+    </form>
+  </section>
+
+  <section id="editor-view" class="hidden">
+    <div class="ed-bar">
+      <h1>Base de connaissances</h1>
+      <span class="pill" id="ver-pill">v—</span>
+      <span class="dirty hidden" id="dirty">Modifications non enregistrées</span>
+      <span class="spacer"></span>
+      <button class="btn" id="btn-reset" disabled>Annuler les modifications</button>
+      <button class="btn" id="btn-verify">Vérifier</button>
+      <button class="btn primary" id="btn-save" disabled>Enregistrer une version…</button>
+    </div>
+    <nav class="tabs" id="tabs" role="tablist"></nav>
+    <div id="panel"></div>
+  </section>
+</main>
+
+<dialog id="dlg-save">
+  <form class="dlg" method="dialog" id="save-form">
+    <h2>Enregistrer une nouvelle version</h2>
+    <p class="muted" style="font-size:14px;margin:0">La vérification automatique est relancée : la base n'est enregistrée que si elle ne contient aucune erreur.
+      Les consultations suivantes utiliseront immédiatement cette version.</p>
+    <div class="field"><label for="save-motif">Motif de la modification</label>
+      <textarea id="save-motif" required placeholder="ex. CF de R9 relevé à 0,75 après revue des dossiers de 2025"></textarea></div>
+    <div class="dlg-actions">
+      <button class="btn" value="cancel" formnovalidate>Annuler</button>
+      <button class="btn primary" id="save-ok" value="ok">Enregistrer</button>
+    </div>
+  </form>
+</dialog>
+
+<footer class="disclaimer">Seul l'expert modifie la base de connaissances ; la base de faits est vidée à chaque consultation.</footer>
+<script src="/static/expert.js"></script>
+</body>
+</html>

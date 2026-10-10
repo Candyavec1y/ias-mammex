@@ -1,0 +1,121 @@
+[
+  {
+    "id": "cas1", "titre": "Cas 1 — 58 ans, mère atteinte, nodule dur fixé, image spiculée",
+    "reponses": {
+      "age": {"valeur": 58},
+      "antecedent_familial": {"valeur": "oui", "certitude": "certain"},
+      "mutation_brca": {"valeur": "non"},
+      "nodule_dur": {"valeur": "oui", "certitude": "certain"},
+      "nodule_fixe": {"valeur": "oui", "certitude": "certain"},
+      "retraction": {"valeur": "non"}, "peau_orange": {"valeur": "non"}, "ecoulement_sanglant": {"valeur": "non"},
+      "masse_spiculee": {"valeur": "oui", "certitude": "certain"},
+      "microcalcifications": {"valeur": "non"}, "masse_ovale": {"valeur": "non"},
+      "biopsie_faite": {"valeur": "non"}
+    },
+    "attendu": {"diagnostic": "cancer_tres_probable", "cf": 0.72, "recommandations": ["R8", "MR5"],
+                "faits": {"risque_eleve": 0.80, "suspicion_forte": 0.80, "imagerie_suspecte": 0.90}}
+  },
+  {
+    "id": "cas2", "titre": "Cas 2 — 62 ans, peau d'orange, microcalcifications, biopsie : carcinome",
+    "reponses": {
+      "age": {"valeur": 62},
+      "antecedent_familial": {"valeur": "non"}, "mutation_brca": {"valeur": "non"},
+      "nodule_dur": {"valeur": "non"},
+      "retraction": {"valeur": "oui", "certitude": "certain"},
+      "peau_orange": {"valeur": "oui", "certitude": "certain"},
+      "ecoulement_sanglant": {"valeur": "non"},
+      "masse_spiculee": {"valeur": "non"},
+      "microcalcifications": {"valeur": "oui", "certitude": "certain"},
+      "masse_ovale": {"valeur": "non"},
+      "biopsie_faite": {"valeur": "oui"},
+      "biopsie_resultat": {"valeur": "carcinome"}
+    },
+    "attendu": {"diagnostic": "cancer_confirme", "cf": 1.0, "recommandations": ["R7"],
+                "faits": {"risque_eleve": 0.40, "suspicion_forte": 0.70, "imagerie_suspecte": 0.90}}
+  },
+  {
+    "id": "cas3", "titre": "Cas 3 — 28 ans, nodule élastique mobile, masse ovale",
+    "reponses": {
+      "age": {"valeur": 28},
+      "antecedent_familial": {"valeur": "non"}, "mutation_brca": {"valeur": "non"},
+      "nodule_dur": {"valeur": "non"},
+      "retraction": {"valeur": "non"}, "peau_orange": {"valeur": "non"}, "ecoulement_sanglant": {"valeur": "non"},
+      "masse_spiculee": {"valeur": "non"}, "microcalcifications": {"valeur": "non"},
+      "masse_ovale": {"valeur": "oui", "certitude": "certain"}
+    },
+    "attendu": {"diagnostic": "probablement_benin", "cf": 0.77, "recommandations": ["R10"],
+                "faits": {"risque_eleve": 0.0, "suspicion_forte": 0.0, "imagerie_rassurante": 0.90}}
+  },
+  {
+    "id": "cas4", "titre": "Cas 4 — 52 ans, clinique douteuse, masse ovale (réponses incertaines)",
+    "reponses": {
+      "age": {"valeur": 52},
+      "antecedent_familial": {"valeur": "non"}, "mutation_brca": {"valeur": "non"},
+      "nodule_dur": {"valeur": "oui", "certitude": "probable"},
+      "nodule_fixe": {"valeur": "oui", "certitude": "possible"},
+      "retraction": {"valeur": "oui", "certitude": "probable"},
+      "peau_orange": {"valeur": "non"}, "ecoulement_sanglant": {"valeur": "non"},
+      "masse_spiculee": {"valeur": "non"}, "microcalcifications": {"valeur": "non"},
+      "masse_ovale": {"valeur": "oui", "certitude": "certain"},
+      "biopsie_faite": {"valeur": "non"}
+    },
+    "attendu": {"diagnostic": "lesion_suspecte", "cf": 0.46, "recommandations": ["R9"],
+                "faits": {"risque_eleve": 0.08, "suspicion_forte": 0.65, "imagerie_rassurante": 0.90}}
+  },
+  {
+    "id": "cas4b", "titre": "Cas 4 (variante) — la biopsie revient bénigne : discordance persistante",
+    "reponses": {
+      "age": {"valeur": 52},
+      "antecedent_familial": {"valeur": "non"}, "mutation_brca": {"valeur": "non"},
+      "nodule_dur": {"valeur": "oui", "certitude": "probable"},
+      "nodule_fixe": {"valeur": "oui", "certitude": "possible"},
+      "retraction": {"valeur": "oui", "certitude": "probable"},
+      "peau_orange": {"valeur": "non"}, "ecoulement_sanglant": {"valeur": "non"},
+      "masse_spiculee": {"valeur": "non"}, "microcalcifications": {"valeur": "non"},
+      "masse_ovale": {"valeur": "oui", "certitude": "certain"},
+      "biopsie_faite": {"valeur": "oui"}, "biopsie_resultat": {"valeur": "benigne"}
+    },
+    "attendu": {"diagnostic": "lesion_suspecte", "cf": 0.46, "recommandations": ["R9"]}
+  },
+  {
+    "id": "cas4c", "titre": "Cas 4 (variante) — sans signe clinique, biopsie bénigne",
+    "reponses": {
+      "age": {"valeur": 52},
+      "antecedent_familial": {"valeur": "non"}, "mutation_brca": {"valeur": "non"},
+      "nodule_dur": {"valeur": "non"},
+      "retraction": {"valeur": "non"}, "peau_orange": {"valeur": "non"}, "ecoulement_sanglant": {"valeur": "non"},
+      "masse_spiculee": {"valeur": "non"}, "microcalcifications": {"valeur": "non"},
+      "masse_ovale": {"valeur": "oui", "certitude": "certain"},
+      "biopsie_faite": {"valeur": "oui"}, "biopsie_resultat": {"valeur": "benigne"}
+    },
+    "attendu": {"diagnostic": "benin_confirme", "cf": 0.90, "recommandations": ["R11"]}
+  },
+  {
+    "id": "cas5", "titre": "Cas 5 — 40 ans, mutation BRCA, sans symptôme, mammographie normale",
+    "reponses": {
+      "age": {"valeur": 40},
+      "antecedent_familial": {"valeur": "non"},
+      "mutation_brca": {"valeur": "oui", "certitude": "certain"},
+      "nodule_dur": {"valeur": "non"},
+      "retraction": {"valeur": "non"}, "peau_orange": {"valeur": "non"}, "ecoulement_sanglant": {"valeur": "non"},
+      "masse_spiculee": {"valeur": "non"}, "microcalcifications": {"valeur": "non"}, "masse_ovale": {"valeur": "non"},
+      "aucune_anomalie": {"valeur": "oui", "certitude": "certain"}
+    },
+    "attendu": {"diagnostic": "indetermine", "cf": null, "recommandations": ["H5", "MR5"],
+                "faits": {"risque_eleve": 0.70, "suspicion_forte": 0.0, "imagerie_rassurante": 0.90}}
+  },
+  {
+    "id": "cas5b", "titre": "Cas 5 (variante) — clinique inconnue même après MR3",
+    "reponses": {
+      "age": {"valeur": 40},
+      "antecedent_familial": {"valeur": "non"},
+      "mutation_brca": {"valeur": "oui", "certitude": "certain"},
+      "nodule_dur": {"valeur": "jnsp", "fois": 2}, "nodule_fixe": {"valeur": "jnsp", "fois": 2},
+      "retraction": {"valeur": "jnsp", "fois": 2}, "peau_orange": {"valeur": "jnsp", "fois": 2},
+      "ecoulement_sanglant": {"valeur": "jnsp", "fois": 2},
+      "masse_spiculee": {"valeur": "non"}, "microcalcifications": {"valeur": "non"}, "masse_ovale": {"valeur": "non"},
+      "aucune_anomalie": {"valeur": "oui", "certitude": "certain"}
+    },
+    "attendu": {"diagnostic": "indetermine", "cf": null, "recommandations": ["H5", "MR5"]}
+  }
+]

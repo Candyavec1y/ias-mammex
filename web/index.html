@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MAMMEX · Consultation</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-ruban" viewBox="0 0 24 32">
+    <path d="M12 3c-3 0-5 2.2-5 5 0 2.3 1.4 4.8 3 7.2L3.5 26.5l3.4 2.2L12 20.4l5.1 8.3 3.4-2.2L14 15.2c1.6-2.4 3-4.9 3-7.2 0-2.8-2-5-5-5zm0 3c1.2 0 2 .9 2 2 0 1.3-.8 2.9-2 4.7-1.2-1.8-2-3.4-2-4.7 0-1.1.8-2 2-2z" fill="currentColor"/>
+  </symbol>
+  <symbol id="i-medecin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="7" r="4"/>
+    <path d="M4 21v-1.5C4 16.5 6.5 14 9.5 14h5c3 0 5.5 2.5 5.5 5.5V21"/>
+    <path d="M9 14v3.2a2 2 0 0 0 4 0"/><path d="M15.5 14.2v3"/><circle cx="15.5" cy="18.4" r="1.2"/>
+  </symbol>
+  <symbol id="i-calendrier" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M12 13.5v4M10 15.5h4"/>
+  </symbol>
+  <symbol id="i-main" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M7 11V5.5a1.5 1.5 0 0 1 3 0V10M10 9V4a1.5 1.5 0 0 1 3 0v6M13 9.5V5a1.5 1.5 0 0 1 3 0v6M16 9a1.5 1.5 0 0 1 3 0v4.5a7.5 7.5 0 0 1-7.5 7.5h-.6a6 6 0 0 1-4.6-2.2L3.6 15a1.5 1.5 0 0 1 2.3-2L7 14"/>
+  </symbol>
+  <symbol id="i-coeur" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z"/>
+  </symbol>
+  <symbol id="i-dossier" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 4h8M9 2.5h6v3H9z"/><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 11h6M9 15h4"/>
+  </symbol>
+</svg>
+<header class="topbar">
+  <a class="brand" href="/" title="Accueil">
+    <svg class="brand-mark" aria-hidden="true"><use href="#i-ruban"/></svg>
+    <span class="brand-name">MAMMEX</span>
+    <span class="brand-sub">Aide au diagnostic du cancer du sein</span>
+  </a>
+  <span class="spacer"></span>
+  <label class="demo-picker" title="Charger un cas de démonstration pré-rempli">
+    <svg class="ic" aria-hidden="true"><use href="#i-dossier"/></svg>
+    <select id="demo-select" aria-label="Cas de démonstration" disabled>
+      <option value="">Cas de démonstration…</option>
+    </select>
+  </label>
+  <span class="pill" id="version-pill">Base —</span>
+  <a class="toplink btn-expert" href="/expert">
+    <svg class="ic" aria-hidden="true"><use href="#i-medecin"/></svg>Interface expert</a>
+</header>
+
+<main id="app">
+  <!-- ============================================================ accueil -->
+  <section id="home-view">
+    <div class="home">
+      <div class="card card-pad">
+        <h1>Nouvelle consultation</h1>
+        <p class="lead">Répondez aux questions dans l'ordre de la consultation. Le système propose une hypothèse
+          diagnostique avec son facteur de certitude, des recommandations et explique son raisonnement.</p>
+        <ul class="steps-preview">
+          <li><b>1</b>Terrain</li><li><b>2</b>Clinique</li><li><b>3</b>Imagerie</li><li><b>4</b>Biopsie <span class="muted">si utile</span></li>
+        </ul>
+        <button class="btn primary" id="btn-start" style="font-size:16px;padding:11px 20px">Commencer la consultation</button>
+        <p class="muted" style="font-size:13.5px;margin:18px 0 0">
+          À chaque question : <b>Oui</b>, <b>Non</b> ou <b>Je ne sais pas</b>. Après un Oui, indiquez votre certitude
+          (certain, probable, possible). « Je ne sais pas » n'est jamais compté comme un non.
+        </p>
+      </div>
+      <div class="card card-pad rose-card">
+        <div class="rose-head">
+          <svg class="rose-ribbon" aria-hidden="true"><use href="#i-ruban"/></svg>
+          <div>
+            <p class="section-title">Octobre rose</p>
+            <p class="rose-title">Le dépistage précoce sauve des vies</p>
+          </div>
+        </div>
+        <ul class="rose-list">
+          <li><svg aria-hidden="true"><use href="#i-calendrier"/></svg>
+            <span><b>Mammographie tous les 2 ans</b> de 50 à 74 ans, dans le cadre du dépistage organisé.</span></li>
+          <li><svg aria-hidden="true"><use href="#i-main"/></svg>
+            <span><b>Palpation des seins</b> : consulter devant toute boule, rétraction ou écoulement.</span></li>
+          <li><svg aria-hidden="true"><use href="#i-coeur"/></svg>
+            <span><b>1 femme sur 8</b> sera concernée au cours de sa vie ; détecté tôt, il se soigne dans la grande majorité des cas.</span></li>
+        </ul>
+        <p class="muted" style="font-size:13px;margin:14px 0 0">Les cas de démonstration sont accessibles depuis le menu en haut de la page.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ question -->
+  <section id="consult-view" class="hidden">
+    <div class="consult">
+      <div>
+        <div class="stepper" id="stepper"></div>
+        <div class="card qcard" id="qcard"></div>
+      </div>
+      <aside class="card dossier" id="dossier"></aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ résultat -->
+  <section id="result-view" class="hidden"></section>
+
+  <!-- ============================================================ rapport -->
+  <section id="report-view" class="hidden"></section>
+</main>
+
+<footer class="disclaimer">
+  Aide à la décision : MAMMEX ne remplace pas l'avis du médecin et seule la biopsie confirme un cancer.
+  Les facteurs de certitude sont des valeurs pédagogiques, à faire valider par un expert.
+</footer>
+
+<script src="/static/medecin.js"></script>
+</body>
+</html>

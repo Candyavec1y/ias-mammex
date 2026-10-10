@@ -1,0 +1,538 @@
+{
+  "meta": {
+    "numero": 1,
+    "date": "2026-10-10T22:41:08",
+    "auteur": "Équipe projet (Mouradian, Pasquier, Mollier)",
+    "motif": "Base initiale : version de la présentation",
+    "nb_regles": 11
+  },
+  "base": {
+    "meta": {
+      "nom": "SE-Sein",
+      "description": "Système expert d'aide au diagnostic du cancer du sein — base de la présentation (11 règles, 5 méta-règles, 5 heuristiques).",
+      "version": 1
+    },
+    "parametres": {
+      "seuil_activation": 0.2,
+      "certitudes": {
+        "certain": 1.0,
+        "probable": 0.7,
+        "possible": 0.4
+      },
+      "lecture_cf": [
+        {
+          "min": 0.9,
+          "texte": "certain"
+        },
+        {
+          "min": 0.7,
+          "texte": "très probable"
+        },
+        {
+          "min": 0.4,
+          "texte": "probable"
+        },
+        {
+          "min": 0.2,
+          "texte": "possible"
+        },
+        {
+          "min": 0.0,
+          "texte": "non retenu"
+        }
+      ]
+    },
+    "variables_floues": [
+      {
+        "id": "age",
+        "libelle": "Âge",
+        "unite": "ans",
+        "ensembles": [
+          {
+            "id": "agee",
+            "libelle": "âgée",
+            "debut": 50,
+            "fin": 60
+          }
+        ]
+      }
+    ],
+    "etapes": [
+      {
+        "id": "terrain",
+        "libelle": "Terrain"
+      },
+      {
+        "id": "clinique",
+        "libelle": "Clinique"
+      },
+      {
+        "id": "imagerie",
+        "libelle": "Imagerie"
+      },
+      {
+        "id": "biopsie",
+        "libelle": "Biopsie"
+      }
+    ],
+    "questions": [
+      {
+        "id": "age",
+        "etape": "terrain",
+        "phase": "recueil",
+        "type": "nombre",
+        "texte": "Quel est l'âge de la patiente ?",
+        "unite": "ans",
+        "min": 10,
+        "max": 110,
+        "aide": "Variable floue : l'âge est converti en degré d'appartenance à « âgée ».",
+        "libelle": "Âge"
+      },
+      {
+        "id": "antecedent_familial",
+        "etape": "terrain",
+        "phase": "recueil",
+        "type": "oui_non",
+        "certitude": true,
+        "texte": "Antécédent de cancer du sein chez une parente du 1er degré (mère, sœur, fille) ?",
+        "libelle": "Antécédent familial 1er degré"
+      },
+      {
+        "id": "mutation_brca",
+        "etape": "terrain",
+        "phase": "recueil",
+        "type": "oui_non",
+        "certitude": true,
+        "texte": "Mutation BRCA1 ou BRCA2 connue ?",
+        "libelle": "Mutation BRCA"
+      },
+      {
+        "id": "nodule_dur",
+        "etape": "clinique",
+        "phase": "recueil",
+        "type": "oui_non",
+        "certitude": true,
+        "texte": "À la palpation, existe-t-il un nodule de consistance dure ?",
+        "libelle": "Nodule dur"
+      },
+      {
+        "id": "nodule_fixe",
+        "etape": "clinique",
+        "phase": "recueil",
+        "type": "oui_non",
+        "certitude": true,
+        "texte": "Ce nodule est-il fixé (adhérent aux plans profonds ou à la peau) ?",
+        "libelle": "Nodule fixé",
+        "masquer_si": {
+          "non": [
+            "nodule_dur"
+          ]
+        }
+      },
+      {
+        "id": "retraction",
+        "etape": "clinique",
+        "phase": "recueil",
+        "type": "oui_non",
+        "certitude": true,
+        "texte": "Rétraction de la peau ou du mamelon ?",
+        "libelle": "Rétraction peau / mamelon"
+      },
+      {
+        "id": "peau_orange",
+        "etape": "clinique",
+        "phase": "recueil",
+        "type": "oui_non",
+        "certitude": true,
+        "texte": "Aspect de peau d'orange ?",
+        "libelle": "Peau d'orange"
+      },
+      {
+        "id": "ecoulement_sanglant",
+        "etape": "clinique",
+        "phase": "recueil",
+        "type": "oui_non",
+        "certitude": true,
+        "texte": "Écoulement mamelonnaire sanglant ?",
+        "libelle": "Écoulement sanglant"
+      },
+      {
+        "id": "masse_spiculee",
+        "etape": "imagerie",
+        "phase": "recueil",
+        "type": "oui_non",
+        "certitude": true,
+        "texte": "Mammographie / échographie : masse irrégulière à contours spiculés ?",
+        "libelle": "Masse irrégulière spiculée"
+      },
+      {
+        "id": "microcalcifications",
+        "etape": "imagerie",
+        "phase": "recueil",
+        "type": "oui_non",
+        "certitude": true,
+        "texte": "Mammographie : microcalcifications fines groupées ?",
+        "libelle": "Microcalcifications fines groupées"
+      },
+      {
+        "id": "masse_ovale",
+        "etape": "imagerie",
+        "phase": "recueil",
+        "type": "oui_non",
+        "certitude": true,
+        "texte": "Mammographie / échographie : masse ovale à contours nets ?",
+        "libelle": "Masse ovale à contours nets"
+      },
+      {
+        "id": "aucune_anomalie",
+        "etape": "imagerie",
+        "phase": "recueil",
+        "type": "oui_non",
+        "certitude": true,
+        "texte": "L'imagerie ne montre-t-elle aucune anomalie ?",
+        "libelle": "Aucune anomalie en imagerie",
+        "masquer_si": {
+          "oui": [
+            "masse_spiculee",
+            "microcalcifications",
+            "masse_ovale"
+          ]
+        }
+      },
+      {
+        "id": "biopsie_faite",
+        "etape": "biopsie",
+        "phase": "chainage_arriere",
+        "type": "oui_non",
+        "certitude": false,
+        "texte": "Une biopsie a-t-elle été faite ?",
+        "libelle": "Biopsie réalisée"
+      },
+      {
+        "id": "biopsie_resultat",
+        "etape": "biopsie",
+        "phase": "chainage_arriere",
+        "type": "choix",
+        "texte": "Quel est le résultat histologique de la biopsie ?",
+        "libelle": "Résultat de la biopsie",
+        "afficher_si": {
+          "oui": [
+            "biopsie_faite"
+          ]
+        },
+        "valeur_si_parent_non": "non_realisee",
+        "options": [
+          {
+            "id": "carcinome",
+            "libelle": "Carcinome (in situ ou infiltrant)"
+          },
+          {
+            "id": "benigne",
+            "libelle": "Lésion bénigne"
+          },
+          {
+            "id": "non_contributive",
+            "libelle": "Non contributive"
+          }
+        ]
+      }
+    ],
+    "faits_intermediaires": [
+      {
+        "id": "risque_eleve",
+        "libelle": "Risque élevé",
+        "groupe": "terrain"
+      },
+      {
+        "id": "suspicion_forte",
+        "libelle": "Suspicion clinique forte",
+        "groupe": "clinique"
+      },
+      {
+        "id": "imagerie_suspecte",
+        "libelle": "Imagerie suspecte (BI-RADS 4-5)",
+        "groupe": "imagerie",
+        "oppose": "imagerie_rassurante"
+      },
+      {
+        "id": "imagerie_rassurante",
+        "libelle": "Imagerie rassurante (BI-RADS 1-3)",
+        "groupe": "imagerie",
+        "oppose": "imagerie_suspecte"
+      }
+    ],
+    "diagnostics": [
+      {
+        "id": "cancer_confirme",
+        "libelle": "Cancer confirmé",
+        "gravite": "rouge"
+      },
+      {
+        "id": "cancer_tres_probable",
+        "libelle": "Cancer très probable",
+        "gravite": "rouge"
+      },
+      {
+        "id": "lesion_suspecte",
+        "libelle": "Lésion suspecte",
+        "gravite": "orange"
+      },
+      {
+        "id": "probablement_benin",
+        "libelle": "Probablement bénin",
+        "gravite": "vert"
+      },
+      {
+        "id": "benin_confirme",
+        "libelle": "Bénin confirmé",
+        "gravite": "vert"
+      }
+    ],
+    "regles": [
+      {
+        "id": "R1",
+        "niveau": 1,
+        "actif": true,
+        "premisse": "age EST agee",
+        "conclusion": "risque_eleve",
+        "cf": 0.4,
+        "commentaire": "Variable floue : l'influence de l'âge monte progressivement entre 50 et 60 ans."
+      },
+      {
+        "id": "R2",
+        "niveau": 1,
+        "actif": true,
+        "premisse": "antecedent_familial OU mutation_brca",
+        "conclusion": "risque_eleve",
+        "cf": 0.7,
+        "commentaire": "Se cumule avec R1."
+      },
+      {
+        "id": "R3",
+        "niveau": 1,
+        "actif": true,
+        "premisse": "nodule_dur ET nodule_fixe",
+        "conclusion": "suspicion_forte",
+        "cf": 0.8,
+        "commentaire": "Le doute sur un seul des deux signes affaiblit toute la règle (ET = minimum)."
+      },
+      {
+        "id": "R4",
+        "niveau": 1,
+        "actif": true,
+        "premisse": "retraction OU peau_orange OU ecoulement_sanglant",
+        "conclusion": "suspicion_forte",
+        "cf": 0.7,
+        "commentaire": "Se cumule avec R3."
+      },
+      {
+        "id": "R5",
+        "niveau": 1,
+        "actif": true,
+        "premisse": "masse_spiculee OU microcalcifications",
+        "conclusion": "imagerie_suspecte",
+        "cf": 0.9,
+        "commentaire": "BI-RADS 4-5."
+      },
+      {
+        "id": "R6",
+        "niveau": 1,
+        "actif": true,
+        "premisse": "aucune_anomalie OU masse_ovale",
+        "conclusion": "imagerie_rassurante",
+        "cf": 0.9,
+        "commentaire": "BI-RADS 1-3."
+      },
+      {
+        "id": "R7",
+        "niveau": 2,
+        "actif": true,
+        "premisse": "biopsie_resultat = carcinome",
+        "conclusion": "cancer_confirme",
+        "cf": 1.0,
+        "recommandation": "Présenter le dossier en RCP (réunion de concertation pluridisciplinaire)",
+        "commentaire": "Règle « histologie » : seule la biopsie confirme un cancer."
+      },
+      {
+        "id": "R8",
+        "niveau": 2,
+        "actif": true,
+        "premisse": "imagerie_suspecte ET suspicion_forte",
+        "conclusion": "cancer_tres_probable",
+        "cf": 0.9,
+        "recommandation": "Biopsie en urgence",
+        "commentaire": "Sans histologie, le système ne conclut jamais à un cancer certain."
+      },
+      {
+        "id": "R9",
+        "niveau": 2,
+        "actif": true,
+        "premisse": "imagerie_suspecte OU suspicion_forte",
+        "conclusion": "lesion_suspecte",
+        "cf": 0.7,
+        "recommandation": "Biopsie",
+        "recommandation_si_biopsie": "Nouvelle biopsie ou présentation en RCP (discordance radio-clinique)",
+        "commentaire": "OU volontaire : un seul signe d'alerte suffit à demander une biopsie."
+      },
+      {
+        "id": "R10",
+        "niveau": 2,
+        "actif": true,
+        "premisse": "imagerie_rassurante ET NON suspicion_forte ET NON risque_eleve",
+        "conclusion": "probablement_benin",
+        "cf": 0.85,
+        "recommandation": "Contrôle à 6 mois",
+        "commentaire": "Bloquée si le terrain ou la clinique ne sont pas renseignés : ne pas savoir n'est pas répondre non."
+      },
+      {
+        "id": "R11",
+        "niveau": 2,
+        "actif": true,
+        "premisse": "biopsie_resultat = benigne ET NON imagerie_suspecte ET NON suspicion_forte",
+        "conclusion": "benin_confirme",
+        "cf": 0.9,
+        "recommandation": "Contrôle à 6 mois, vérifier la concordance radio-clinique",
+        "commentaire": "Règle « histologie » : une biopsie bénigne ne rassure pas si l'image ou la clinique restent inquiétantes."
+      }
+    ],
+    "meta_regles": [
+      {
+        "id": "MR1",
+        "actif": true,
+        "si": "Toujours",
+        "alors": "Saturer le niveau 1 (chaînage avant) avant d'ouvrir le niveau 2 (chaînage arrière)"
+      },
+      {
+        "id": "MR2",
+        "actif": true,
+        "si": "Un résultat de biopsie est connu",
+        "alors": "Évaluer R7 et R11 en premier ; si l'un a un CF ≥ 0,9, ne pas tester R8 à R10",
+        "parametres": {
+          "regles_histologie": [
+            "R7",
+            "R11"
+          ],
+          "fait_biopsie": "biopsie_resultat",
+          "valeurs_sans_resultat": [
+            "non_realisee"
+          ],
+          "seuil": 0.9
+        }
+      },
+      {
+        "id": "MR3",
+        "actif": true,
+        "si": "Terrain ou clinique non renseignés",
+        "alors": "Les demander avant d'ouvrir le niveau 2 : aucune conclusion n'est produite sur un dossier incomplet",
+        "parametres": {
+          "groupes": [
+            "terrain",
+            "clinique"
+          ],
+          "nombre_max_demandes": 2
+        }
+      },
+      {
+        "id": "MR4",
+        "actif": true,
+        "si": "CF(suspicion forte) ≥ 0,4 OU CF(risque élevé) ≥ 0,7",
+        "alors": "Désactiver R10 : aucune conclusion rassurante n'est permise",
+        "parametres": {
+          "conditions": [
+            {
+              "fait": "suspicion_forte",
+              "seuil": 0.4
+            },
+            {
+              "fait": "risque_eleve",
+              "seuil": 0.7
+            }
+          ],
+          "regles_desactivees": [
+            "R10"
+          ]
+        }
+      },
+      {
+        "id": "MR5",
+        "actif": true,
+        "si": "CF(risque élevé) ≥ 0,7",
+        "alors": "Ajouter la recommandation « oncogénétique + surveillance renforcée », quel que soit le diagnostic",
+        "parametres": {
+          "fait": "risque_eleve",
+          "seuil": 0.7,
+          "recommandation": "Consultation d'oncogénétique et surveillance renforcée (IRM mammaire annuelle)"
+        }
+      }
+    ],
+    "heuristiques": [
+      {
+        "id": "H1",
+        "nom": "Du plus grave au plus rassurant",
+        "effet": "Hypothèses testées dans l'ordre ; la première avec CF ≥ 0,4 est retenue, les autres restent affichées comme secondaires.",
+        "parametres": {
+          "ordre": [
+            "R7",
+            "R8",
+            "R9",
+            "R11",
+            "R10"
+          ],
+          "seuil_retenue": 0.4
+        }
+      },
+      {
+        "id": "H2",
+        "nom": "Arrêt sur certitude",
+        "effet": "Dès qu'une hypothèse atteint CF ≥ 0,9, le moteur s'arrête.",
+        "parametres": {
+          "seuil": 0.9
+        }
+      },
+      {
+        "id": "H3",
+        "nom": "Prudence",
+        "effet": "Si clinique et imagerie se contredisent, la conclusion la plus grave l'emporte.",
+        "parametres": {
+          "seuil": 0.4
+        }
+      },
+      {
+        "id": "H4",
+        "nom": "Question la moins coûteuse d'abord",
+        "effet": "Interrogatoire → examen clinique → imagerie → biopsie. La biopsie n'est demandée que si elle peut changer la décision.",
+        "parametres": {
+          "ordre_etapes": [
+            "terrain",
+            "clinique",
+            "imagerie",
+            "biopsie"
+          ],
+          "questions_conditionnees": [
+            "biopsie_faite",
+            "biopsie_resultat"
+          ],
+          "conditions": [
+            {
+              "fait": "imagerie_suspecte",
+              "seuil": 0.2
+            },
+            {
+              "fait": "suspicion_forte",
+              "seuil": 0.4
+            }
+          ]
+        }
+      },
+      {
+        "id": "H5",
+        "nom": "Aucune conclusion fiable",
+        "effet": "Si aucune hypothèse n'atteint 0,4, ou si des données manquantes bloquent R10 : résultat « indéterminé ».",
+        "parametres": {
+          "seuil": 0.4,
+          "recommandation": "Avis spécialisé (sénologue) recommandé"
+        }
+      }
+    ]
+  }
+}
