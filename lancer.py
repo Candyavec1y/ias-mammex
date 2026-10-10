@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Lance SE-Sein : démarre le serveur local et ouvre le navigateur.
+"""Lance MAMMEX : démarre le serveur local et ouvre le navigateur.
 
     python3 lancer.py            (port 8765 par défaut)
     python3 lancer.py --port 9000
@@ -12,10 +12,10 @@ import threading
 import webbrowser
 
 if sys.version_info < (3, 8):
-    sys.exit("SE-Sein nécessite Python 3.8 ou plus récent (vous avez " + sys.version.split()[0] + ").")
+    sys.exit("MAMMEX nécessite Python 3.8 ou plus récent (vous avez " + sys.version.split()[0] + ").")
 
-from se_sein import base  # noqa: E402
-from se_sein.serveur import creer_serveur  # noqa: E402
+from mammex import base  # noqa: E402
+from mammex.serveur import creer_serveur  # noqa: E402
 
 
 def port_libre(depart):
@@ -31,7 +31,7 @@ def port_libre(depart):
 
 def main():
     cfg = base.config()
-    ap = argparse.ArgumentParser(description="SE-Sein — système expert d'aide au diagnostic du cancer du sein")
+    ap = argparse.ArgumentParser(description="MAMMEX — système expert d'aide au diagnostic du cancer du sein")
     ap.add_argument("--port", type=int, default=int(cfg.get("port", 8765)))
     ap.add_argument("--sans-navigateur", action="store_true")
     args = ap.parse_args()
@@ -40,7 +40,7 @@ def main():
     serveur = creer_serveur(port)
     url = f"http://127.0.0.1:{port}/"
     print()
-    print("  SE-Sein est lancé.")
+    print("  MAMMEX est lancé.")
     print(f"  Interface médecin : {url}")
     print(f"  Interface expert  : {url}expert   (code d'accès : {cfg.get('code_expert')})")
     print()
@@ -52,7 +52,7 @@ def main():
     try:
         serveur.serve_forever()
     except KeyboardInterrupt:
-        print("\n  SE-Sein arrêté.")
+        print("\n  MAMMEX arrêté.")
     finally:
         serveur.server_close()
 

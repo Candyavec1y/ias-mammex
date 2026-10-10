@@ -1,4 +1,4 @@
-/* SE-Sein — interface expert (éditeur de la base de connaissances) */
+/* MAMMEX — interface expert (éditeur de la base de connaissances) */
 "use strict";
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -35,7 +35,7 @@ async function api(url, data) {
   try {
     r = await fetch(url, opts);
   } catch {
-    throw new Error("Le serveur SE-Sein ne répond pas. Vérifiez que la fenêtre de lancement est ouverte.");
+    throw new Error("Le serveur MAMMEX ne répond pas. Vérifiez que la fenêtre de lancement est ouverte.");
   }
   const j = await r.json().catch(() => ({}));
   if (r.status === 401) {

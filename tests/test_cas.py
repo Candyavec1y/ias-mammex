@@ -10,7 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from se_sein import base, dsl, moteur, verification  # noqa: E402
+from mammex import base, dsl, moteur, verification  # noqa: E402
 
 
 def resultat(reponses):

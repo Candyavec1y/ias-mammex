@@ -22,7 +22,7 @@ class ErreurRequete(Exception):
 
 
 class Gestionnaire(BaseHTTPRequestHandler):
-    server_version = "SE-Sein/1.0"
+    server_version = "MAMMEX/1.0"
 
     def log_message(self, fmt, *args):  # console plus calme
         pass
@@ -83,7 +83,7 @@ class Gestionnaire(BaseHTTPRequestHandler):
                 kb = base.charger_base()
                 questions = [{k: q.get(k) for k in ("id", "libelle", "texte", "etape", "type", "unite", "options")}
                              for q in kb["questions"]]
-                return self._json({"nom": kb["meta"].get("nom", "SE-Sein"), "version": kb["meta"].get("version"),
+                return self._json({"nom": kb["meta"].get("nom", "MAMMEX"), "version": kb["meta"].get("version"),
                                    "etapes": kb["etapes"], "questions": questions,
                                    "certitudes": kb["parametres"]["certitudes"]})
             if url.path == "/api/cas":

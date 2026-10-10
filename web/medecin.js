@@ -1,4 +1,4 @@
-/* SE-Sein — interface médecin */
+/* MAMMEX — interface médecin */
 "use strict";
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -24,7 +24,7 @@ async function api(url, data) {
   try {
     r = await fetch(url, opts);
   } catch (e) {
-    throw new Error("Le serveur SE-Sein ne répond pas. Vérifiez que la fenêtre de lancement est toujours ouverte.");
+    throw new Error("Le serveur MAMMEX ne répond pas. Vérifiez que la fenêtre de lancement est toujours ouverte.");
   }
   const j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(j.erreur || `Erreur ${r.status}`);
@@ -412,7 +412,7 @@ function rendreRapport() {
     </div>
     <div class="card report">
       <div class="report-head">
-        <div><h1>SE-Sein · Synthèse de consultation</h1><div class="muted" style="font-size:13px">${esc(date)} · base de connaissances v${esc(etat.info?.version ?? "?")}</div></div>
+        <div><h1>MAMMEX · Synthèse de consultation</h1><div class="muted" style="font-size:13px">${esc(date)} · base de connaissances v${esc(etat.info?.version ?? "?")}</div></div>
         <div class="report-fields">
           <label for="rp-ref">Réf. dossier</label><input id="rp-ref" placeholder="à compléter">
           <label for="rp-med">Médecin</label><input id="rp-med" placeholder="à compléter">

@@ -1,4 +1,4 @@
-"""Moteur d'inférence de SE-Sein.
+"""Moteur d'inférence de MAMMEX.
 
 Chaînage mixte :
   - niveau 1 en chaînage avant, jusqu'à saturation (MR1) ;

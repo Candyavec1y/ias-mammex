@@ -1,38 +1,7 @@
-# SE-Sein — système expert d'aide au diagnostic du cancer du sein
+# MAMMEX — système expert d'aide au diagnostic du cancer du sein
 
-Mouradian · Pasquier · Mollier — implémentation fidèle à la présentation finale
-(11 règles sur 2 niveaux, facteurs de certitude, moteur mixte, méta-règles MR1-MR5, heuristiques H1-H5).
-
-> Aide à la décision : SE-Sein ne remplace pas l'avis du médecin, et seule la biopsie confirme un cancer.
+> Aide à la décision : MAMMEX ne remplace pas l'avis du médecin, et seule la biopsie confirme un cancer.
 > Les CF sont des valeurs pédagogiques, à faire valider par un expert.
-
----
-
-## 1. Lancer SE-Sein sur Mac
-
-Rien à installer à part Python 3, déjà présent sur la plupart des Mac.
-
-**Méthode simple**
-
-1. Décompressez le dossier `se-sein` (par exemple dans Documents).
-2. Double-cliquez sur **`Lancer SE-Sein.command`**.
-   - Au premier lancement, macOS peut bloquer le fichier (« développeur non identifié »).
-     Faites alors **clic droit → Ouvrir → Ouvrir**. Il suffit de le faire une seule fois.
-   - Si macOS propose d'installer les « outils de ligne de commande », acceptez : cela installe Python.
-3. Le navigateur s'ouvre sur **http://127.0.0.1:8765/**. Laissez la fenêtre noire (Terminal) ouverte
-   pendant l'utilisation, et fermez-la pour arrêter SE-Sein.
-
-**Méthode Terminal**
-
-```bash
-cd ~/Documents/se-sein        # le dossier décompressé
-python3 lancer.py
-```
-
-Options : `python3 lancer.py --port 9000` ou `python3 lancer.py --sans-navigateur`.
-
-Le serveur n'écoute que sur votre ordinateur (127.0.0.1) : aucune donnée ne sort de la machine,
-et rien n'est conservé entre deux consultations.
 
 ## 2. Interface médecin — http://127.0.0.1:8765/
 
@@ -86,12 +55,12 @@ inconnue) redonnent exactement les conclusions et les CF des slides 11-12 :
 
 ```
 lancer.py                     démarre le serveur et ouvre le navigateur
-Lancer SE-Sein.command        lanceur double-cliquable (Mac)
-se_sein/dsl.py                langage des prémisses, calculs ET / OU / NON / flou
-se_sein/moteur.py             moteur d'inférence (chaînage avant puis arrière, MR, H, trace, explications)
-se_sein/verification.py       vérification automatique de la base
-se_sein/base.py               lecture, écriture et versions de la base
-se_sein/serveur.py            serveur web local (bibliothèque standard Python uniquement)
+Lancer MAMMEX.command         lanceur double-cliquable (Mac)
+mammex/dsl.py                 langage des prémisses, calculs ET / OU / NON / flou
+mammex/moteur.py              moteur d'inférence (chaînage avant puis arrière, MR, H, trace, explications)
+mammex/verification.py        vérification automatique de la base
+mammex/base.py                lecture, écriture et versions de la base
+mammex/serveur.py             serveur web local (bibliothèque standard Python uniquement)
 data/base_connaissances.json  LA base de connaissances (règles, méta-règles, heuristiques, questions)
 data/cas_reference.json       cas de référence (tests et démonstration)
 data/versions/                historique des versions (créé au premier lancement)

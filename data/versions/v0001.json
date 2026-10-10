@@ -8,7 +8,7 @@
   },
   "base": {
     "meta": {
-      "nom": "SE-Sein",
+      "nom": "MAMMEX",
       "description": "Système expert d'aide au diagnostic du cancer du sein — base de la présentation (11 règles, 5 méta-règles, 5 heuristiques).",
       "version": 1
     },
