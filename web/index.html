@@ -25,6 +25,15 @@
   <symbol id="i-coeur" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z"/>
   </symbol>
+  <symbol id="i-alerte" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 3.5 2.5 20h19z"/><path d="M12 10v4.5M12 17.5v.01"/>
+  </symbol>
+  <symbol id="i-lien" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>
+  </symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/>
+  </symbol>
   <symbol id="i-dossier" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <path d="M8 4h8M9 2.5h6v3H9z"/><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 11h6M9 15h4"/>
   </symbol>
@@ -36,10 +45,10 @@
     <span class="brand-sub">Aide au diagnostic du cancer du sein</span>
   </a>
   <span class="spacer"></span>
-  <label class="demo-picker" title="Charger un cas de démonstration pré-rempli">
+  <label class="demo-picker" title="Ouvrir un cas de référence">
     <svg class="ic" aria-hidden="true"><use href="#i-dossier"/></svg>
-    <select id="demo-select" aria-label="Cas de démonstration" disabled>
-      <option value="">Cas de démonstration…</option>
+    <select id="demo-select" aria-label="Cas de référence" disabled>
+      <option value="">Cas de référence…</option>
     </select>
   </label>
   <span class="pill" id="version-pill">Base —</span>
@@ -51,37 +60,76 @@
   <!-- ============================================================ accueil -->
   <section id="home-view">
     <div class="home">
-      <div class="card card-pad">
-        <h1>Nouvelle consultation</h1>
-        <p class="lead">Répondez aux questions dans l'ordre de la consultation. Le système propose une hypothèse
-          diagnostique avec son facteur de certitude, des recommandations et explique son raisonnement.</p>
-        <ul class="steps-preview">
-          <li><b>1</b>Terrain</li><li><b>2</b>Clinique</li><li><b>3</b>Imagerie</li><li><b>4</b>Biopsie <span class="muted">si utile</span></li>
-        </ul>
-        <button class="btn primary" id="btn-start" style="font-size:16px;padding:11px 20px">Commencer la consultation</button>
-        <p class="muted" style="font-size:13.5px;margin:18px 0 0">
-          À chaque question : <b>Oui</b>, <b>Non</b> ou <b>Je ne sais pas</b>. Après un Oui, indiquez votre certitude
-          (certain, probable, possible). « Je ne sais pas » n'est jamais compté comme un non.
-        </p>
-      </div>
-      <div class="card card-pad rose-card">
+      <!-- gauche : sensibilisation -->
+      <aside class="card card-pad rose-card side-left">
         <div class="rose-head">
           <svg class="rose-ribbon" aria-hidden="true"><use href="#i-ruban"/></svg>
           <div>
             <p class="section-title">Octobre rose</p>
+            <p class="rose-title">Chiffres clés</p>
+          </div>
+        </div>
+        <ul class="stats">
+          <li><b>1 femme sur 8</b><span>sera touchée par un cancer du sein au cours de sa vie</span></li>
+          <li><b>2,4 millions</b><span>de femmes diagnostiquées dans le monde en 2024 <small>(OMS)</small></span></li>
+          <li><b>694 000</b><span>décès dans le monde en 2024 <small>(OMS)</small></span></li>
+          <li><b>9 sur 10</b><span>se guérissent lorsqu'ils sont détectés à un stade précoce</span></li>
+        </ul>
+        <p class="rose-sub"><svg aria-hidden="true"><use href="#i-alerte"/></svg>Signes qui doivent alerter</p>
+        <ul class="signs">
+          <li>Boule ou épaississement dans le sein ou l'aisselle</li>
+          <li>Modification de la taille ou de la forme du sein</li>
+          <li>Peau d'orange, rougeur, fossette</li>
+          <li>Rétraction ou écoulement du mamelon</li>
+        </ul>
+      </aside>
+
+      <!-- centre : consultation -->
+      <div class="card consult-hero">
+        <div class="hero-band">
+          <svg class="hero-ribbon" aria-hidden="true"><use href="#i-ruban"/></svg>
+          <h1>Nouvelle consultation</h1>
+          <p class="lead">Une hypothèse diagnostique argumentée, avec son facteur de certitude, ses recommandations
+            et l'explication complète du raisonnement.</p>
+        </div>
+        <div class="hero-body">
+          <ol class="steps-preview">
+            <li><b>1</b>Terrain</li><li><b>2</b>Clinique</li><li><b>3</b>Imagerie</li><li><b>4</b>Biopsie <span class="muted">si utile</span></li>
+          </ol>
+          <button class="btn primary btn-hero" id="btn-start">Commencer la consultation</button>
+          <p class="hero-note">
+            À chaque question : <b>Oui</b>, <b>Non</b> ou <b>Je ne sais pas</b>. Après un Oui, indiquez votre certitude
+            (certain, probable, possible). « Je ne sais pas » n'est jamais compté comme un non.
+          </p>
+        </div>
+      </div>
+
+      <!-- droite : dépistage et ressources -->
+      <aside class="card card-pad rose-card side-right">
+        <div class="rose-head">
+          <svg class="rose-ribbon" aria-hidden="true"><use href="#i-calendrier"/></svg>
+          <div>
+            <p class="section-title">Dépistage</p>
             <p class="rose-title">Le dépistage précoce sauve des vies</p>
           </div>
         </div>
         <ul class="rose-list">
           <li><svg aria-hidden="true"><use href="#i-calendrier"/></svg>
-            <span><b>Mammographie tous les 2 ans</b> de 50 à 74 ans, dans le cadre du dépistage organisé.</span></li>
+            <span><b>Mammographie tous les 2 ans</b> de 50 à 74 ans, prise en charge à 100 % dans le dépistage organisé.</span></li>
           <li><svg aria-hidden="true"><use href="#i-main"/></svg>
-            <span><b>Palpation des seins</b> : consulter devant toute boule, rétraction ou écoulement.</span></li>
+            <span><b>Examen clinique des seins</b> recommandé chaque année à partir de 25 ans.</span></li>
           <li><svg aria-hidden="true"><use href="#i-coeur"/></svg>
-            <span><b>1 femme sur 8</b> sera concernée au cours de sa vie ; détecté tôt, il se soigne dans la grande majorité des cas.</span></li>
+            <span><b>Risque élevé</b> (antécédents familiaux, mutation BRCA) : suivi spécifique et plus précoce.</span></li>
         </ul>
-        <p class="muted" style="font-size:13px;margin:14px 0 0">Les cas de démonstration sont accessibles depuis le menu en haut de la page.</p>
-      </div>
+        <p class="rose-sub"><svg aria-hidden="true"><use href="#i-globe"/></svg>Ressources</p>
+        <ul class="links">
+          <li><a href="https://www.who.int/fr/news-room/fact-sheets/detail/breast-cancer" target="_blank" rel="noopener">OMS · Cancer du sein, principaux faits<svg aria-hidden="true"><use href="#i-lien"/></svg></a></li>
+          <li><a href="https://www.who.int/initiatives/global-breast-cancer-initiative" target="_blank" rel="noopener">OMS · Initiative mondiale contre le cancer du sein<svg aria-hidden="true"><use href="#i-lien"/></svg></a></li>
+          <li><a href="https://www.cancer.fr/professionnels-de-sante/prevention-et-depistages/depistage-et-detection-precoce/depistage-du-cancer-du-sein" target="_blank" rel="noopener">INCa · Dépistage du cancer du sein<svg aria-hidden="true"><use href="#i-lien"/></svg></a></li>
+          <li><a href="https://www.ameli.fr/assure/sante/themes/cancer-sein" target="_blank" rel="noopener">Ameli · Cancer du sein<svg aria-hidden="true"><use href="#i-lien"/></svg></a></li>
+          <li><a href="https://www.cancerdusein.org/" target="_blank" rel="noopener">Ruban Rose · Octobre rose<svg aria-hidden="true"><use href="#i-lien"/></svg></a></li>
+        </ul>
+      </aside>
     </div>
   </section>
 
@@ -104,8 +152,8 @@
 </main>
 
 <footer class="disclaimer">
-  Aide à la décision : MAMMEX ne remplace pas l'avis du médecin et seule la biopsie confirme un cancer.
-  Les facteurs de certitude sont des valeurs pédagogiques, à faire valider par un expert.
+  MAMMEX est un outil d'aide à la décision : il ne se substitue pas au jugement clinique du médecin.
+  Seul l'examen histologique confirme le diagnostic de cancer.
 </footer>
 
 <script src="/static/medecin.js"></script>

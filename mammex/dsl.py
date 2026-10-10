@@ -255,3 +255,30 @@ def mu_rampe(x, debut, fin):
     if x >= fin:
         return 1.0
     return (x - debut) / (fin - debut)
+
+
+def points_ensemble(e):
+    """Points (x, μ) d'un ensemble flou, triés par x.
+
+    Format actuel : « points »: [[x, μ], …] (fonction linéaire par morceaux).
+    Ancien format (bases antérieures) : « debut » / « fin », rampe croissante de 0 à 1.
+    """
+    if e.get("points"):
+        return sorted((float(x), float(m)) for x, m in e["points"])
+    return [(float(e["debut"]), 0.0), (float(e["fin"]), 1.0)]
+
+
+def mu_points(x, pts):
+    """Interpolation linéaire entre les points ; constante avant le premier et après le dernier."""
+    if x is None:
+        return None
+    if x <= pts[0][0]:
+        return pts[0][1]
+    for (x0, m0), (x1, m1) in zip(pts, pts[1:]):
+        if x <= x1:
+            return m1 if x1 == x0 else m0 + (m1 - m0) * (x - x0) / (x1 - x0)
+    return pts[-1][1]
+
+
+def mu_ensemble(x, e):
+    return mu_points(x, points_ensemble(e))

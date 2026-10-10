@@ -1,7 +1,7 @@
 {
   "meta": {
     "nom": "MAMMEX",
-    "description": "Système expert d'aide au diagnostic du cancer du sein — base de la présentation (11 règles, 5 méta-règles, 5 heuristiques).",
+    "description": "Système expert d'aide au diagnostic du cancer du sein — base initiale (11 règles, 5 méta-règles, 5 heuristiques).",
     "version": 1
   },
   "parametres": {
@@ -39,12 +39,14 @@
       "id": "age",
       "libelle": "Âge",
       "unite": "ans",
+      "min": 20,
+      "max": 90,
       "ensembles": [
         {
           "id": "agee",
           "libelle": "âgée",
-          "debut": 50,
-          "fin": 60
+          "forme": "croissante",
+          "points": [[50, 0], [60, 1]]
         }
       ]
     }

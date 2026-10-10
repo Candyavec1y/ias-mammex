@@ -1,5 +1,5 @@
-"""Tests : les 5 cas de la présentation (et leurs variantes) doivent donner exactement
-les conclusions et les CF des slides 11-12.
+"""Tests : les 5 cas de référence (et leurs variantes) doivent donner exactement
+les conclusions et les CF attendus par la spécification.
 
 Lancer :  python3 -m unittest discover -s tests -v
 """
@@ -53,7 +53,21 @@ class TestCalculs(unittest.TestCase):
         self.assertEqual(dsl.mu_rampe(45, 50, 60), 0.0)
         self.assertEqual(dsl.mu_rampe(70, 50, 60), 1.0)
 
-    def test_combinaison_slide6(self):
+    def test_flou_points(self):
+        croissante = {"points": [[50, 0], [60, 1]]}
+        self.assertAlmostEqual(dsl.mu_ensemble(58, croissante), 0.8)
+        self.assertEqual(dsl.mu_ensemble(45, croissante), 0.0)
+        self.assertEqual(dsl.mu_ensemble(70, croissante), 1.0)
+        trapeze = {"points": [[20, 0], [30, 1], [40, 1], [50, 0]]}
+        self.assertEqual(dsl.mu_ensemble(10, trapeze), 0.0)
+        self.assertEqual(dsl.mu_ensemble(35, trapeze), 1.0)
+        self.assertAlmostEqual(dsl.mu_ensemble(45, trapeze), 0.5)
+        self.assertEqual(dsl.mu_ensemble(60, trapeze), 0.0)
+        # ancien format (debut / fin) toujours accepté
+        self.assertAlmostEqual(dsl.mu_ensemble(58, {"debut": 50, "fin": 60}), 0.8)
+        self.assertIsNone(dsl.mu_ensemble(None, croissante))
+
+    def test_combinaison_ou(self):
         res = resultat(next(c for c in base.charger_cas() if c["id"] == "cas1")["reponses"])
         r1 = [e for e in res["trace_niveau1"] if e["conclusion"] == "risque_eleve"]
         self.assertEqual([dsl.fmt(e["cf"]) for e in r1], ["0,32", "0,70"])
@@ -63,7 +77,7 @@ class TestCalculs(unittest.TestCase):
         res = resultat(next(c for c in base.charger_cas() if c["id"] == "cas4")["reponses"])
         r10 = next(t for t in res["trace_niveau2"] if t["regle"] == "R10")
         self.assertEqual(r10["statut"], "desactivee")
-        # calcul exact (la slide arrondit 1 − 0,65 à 0,35 avant de multiplier : 0,30)
+        # calcul exact (la spécification arrondit 1 − 0,65 à 0,35 avant de multiplier : 0,30)
         self.assertEqual(dsl.fmt(r10["cf_sans_mr4"]), "0,29")
 
     def test_r11_variante_cas4(self):

@@ -2,14 +2,14 @@
   "meta": {
     "numero": 1,
     "date": "2026-10-10T22:41:08",
-    "auteur": "Équipe projet (Mouradian, Pasquier, Mollier)",
-    "motif": "Base initiale : version de la présentation",
+    "auteur": "Équipe MAMMEX",
+    "motif": "Base initiale (11 règles, 5 méta-règles, 5 heuristiques)",
     "nb_regles": 11
   },
   "base": {
     "meta": {
       "nom": "MAMMEX",
-      "description": "Système expert d'aide au diagnostic du cancer du sein — base de la présentation (11 règles, 5 méta-règles, 5 heuristiques).",
+      "description": "Système expert d'aide au diagnostic du cancer du sein — base initiale (11 règles, 5 méta-règles, 5 heuristiques).",
       "version": 1
     },
     "parametres": {

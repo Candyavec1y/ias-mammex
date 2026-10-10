@@ -128,26 +128,41 @@ function rendreStepper() {
     .join("");
 }
 
+// points [[x, μ], …] de l'ensemble (l'ancien format debut / fin est une rampe croissante)
+const ptsEns = (e) => (e.points?.length ? [...e.points].map(([x, m]) => [Number(x), Number(m)]).sort((a, b) => a[0] - b[0]) : [[Number(e.debut), 0], [Number(e.fin), 1]]);
+function muPts(x, pts) {
+  if (x === null || x === undefined || isNaN(x)) return null;
+  if (x <= pts[0][0]) return pts[0][1];
+  for (let k = 1; k < pts.length; k++) {
+    const [x0, m0] = pts[k - 1], [x1, m1] = pts[k];
+    if (x <= x1) return x1 === x0 ? m1 : m0 + ((m1 - m0) * (x - x0)) / (x1 - x0);
+  }
+  return pts.at(-1)[1];
+}
+
 function svgFlou(f, x) {
   const ens = f.ensembles[0];
-  const W = 150, H = 44, x0 = 20, x1 = 80;
+  const pts = ptsEns(ens);
+  const W = 150, H = 44;
+  const x0 = f.min ?? Math.min(20, pts[0][0] - 10), x1 = f.max ?? Math.max(80, pts.at(-1)[0] + 10);
   const px = (a) => ((Math.min(Math.max(a, x0), x1) - x0) / (x1 - x0)) * W;
   const y = (m) => H - 6 - m * (H - 14);
-  const a = px(ens.debut), b = px(ens.fin);
-  let mu = x == null || isNaN(x) ? null : x <= ens.debut ? 0 : x >= ens.fin ? 1 : (x - ens.debut) / (ens.fin - ens.debut);
+  const xs = [x0, ...pts.map(([a]) => a).filter((a) => a > x0 && a < x1), x1];
+  const ligne = xs.map((a) => `${px(a).toFixed(1)},${y(muPts(a, pts)).toFixed(1)}`).join(" ");
+  const mu = muPts(x, pts);
   const marker = mu === null ? "" : `<circle cx="${px(x)}" cy="${y(mu)}" r="4" fill="var(--accent)"/>`;
+  const reperes = pts.filter(([a]) => a > x0 && a < x1)
+    .map(([a]) => `<text x="${px(a)}" y="${H}" font-size="9" fill="var(--faint)" text-anchor="middle">${a}</text>`).join("");
   return `<svg width="${W}" height="${H}" viewBox="-2 0 ${W + 4} ${H}" aria-hidden="true">
     <line x1="0" y1="${H - 6}" x2="${W}" y2="${H - 6}" stroke="var(--line-strong)"/>
-    <polyline points="0,${y(0)} ${a},${y(0)} ${b},${y(1)} ${W},${y(1)}" fill="none" stroke="var(--text)" stroke-width="1.6"/>
-    <text x="${a}" y="${H}" font-size="9" fill="var(--faint)" text-anchor="middle">${ens.debut}</text>
-    <text x="${b}" y="${H}" font-size="9" fill="var(--faint)" text-anchor="middle">${ens.fin}</text>
-    ${marker}</svg>`;
+    <polyline points="${ligne}" fill="none" stroke="var(--text)" stroke-width="1.6"/>
+    ${reperes}${marker}</svg>`;
 }
 
 function texteFlou(f, x) {
   const ens = f.ensembles[0];
   if (x === "" || x == null || isNaN(x)) return `Saisissez l'âge : il sera converti en degré d'appartenance à « ${esc(ens.libelle)} ».`;
-  const mu = x <= ens.debut ? 0 : x >= ens.fin ? 1 : (x - ens.debut) / (ens.fin - ens.debut);
+  const mu = muPts(x, ptsEns(ens));
   return `<b>${esc(ens.libelle)} à ${Math.round(mu * 100)} %</b> (μ = ${fr(mu)})`;
 }
 
@@ -432,7 +447,7 @@ function rendreRapport() {
       <h2>Justification</h2>
       ${res.comment.map((c) => `<div style="font-size:14px;margin-bottom:4px">${esc(c.texte)}${c.calcul ? ` <span class="mono muted">[${esc(c.calcul)}]</span>` : ""}</div>`).join("")}
       <div class="foot">Document produit par un système expert d'aide à la décision. Il ne remplace pas l'avis du médecin ;
-        seule l'histologie confirme un cancer. Facteurs de certitude pédagogiques, non validés cliniquement.</div>
+        seul l'examen histologique confirme le diagnostic de cancer.</div>
     </div>`;
   $("#rp-back").addEventListener("click", () => montrer("result-view"));
   $("#rp-print").addEventListener("click", () => window.print());

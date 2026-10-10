@@ -54,12 +54,12 @@ def _fichiers_versions():
 
 
 def initialiser_versions():
-    """Crée la version 1 (base de la présentation) au premier lancement."""
+    """Crée la version 1 (base initiale) au premier lancement."""
     with _verrou:
         if not _fichiers_versions():
             base = charger_base()
-            _enregistrer_sans_verrou(base, "Équipe projet (Mouradian, Pasquier, Mollier)",
-                                     "Base initiale : version de la présentation", ecrire_base=False)
+            _enregistrer_sans_verrou(base, "Équipe MAMMEX",
+                                     "Base initiale (11 règles, 5 méta-règles, 5 heuristiques)", ecrire_base=False)
 
 
 def lister_versions():

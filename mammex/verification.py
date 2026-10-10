@@ -6,7 +6,7 @@ Contrôles :
   3. redondances (même prémisse ou prémisse incluse → même conclusion : CF comptés deux fois) ;
   4. trous de couverture (profils pour lesquels le système ne conclut rien) ;
   5. règles jamais déclenchées ;
-  6. non-régression sur les cas de référence de la présentation.
+  6. non-régression sur les cas de référence.
 """
 from __future__ import annotations
 
@@ -167,12 +167,26 @@ def controle_structure(kb):
         if e not in etapes:
             err.append(f"H4 : étape « {e} » inconnue")
     for v in kb.get("variables_floues", []):
+        if not v.get("ensembles"):
+            err.append(f"Variable floue {v.get('id')} : aucun ensemble défini")
         for e in v.get("ensembles", []):
+            nom = f"Variable floue {v.get('id')} / {e.get('id')}"
             try:
-                if float(e["debut"]) >= float(e["fin"]):
-                    err.append(f"Variable floue {v['id']} / {e['id']} : le début doit être inférieur à la fin")
+                if e.get("points"):
+                    xs = [float(x) for x, _ in e["points"]]
+                    mus = [float(m) for _, m in e["points"]]
+                    if len(xs) < 2:
+                        err.append(f"{nom} : au moins deux points sont nécessaires")
+                    elif any(b <= a for a, b in zip(xs, xs[1:])):
+                        err.append(f"{nom} : les abscisses des points doivent être strictement croissantes")
+                    if any(not 0 <= m <= 1 for m in mus):
+                        err.append(f"{nom} : les degrés d'appartenance μ doivent être compris entre 0 et 1")
+                    elif max(mus) < 1:
+                        al.append(f"{nom} : la fonction n'atteint jamais μ = 1 (ensemble non normalisé)")
+                elif float(e["debut"]) >= float(e["fin"]):
+                    err.append(f"{nom} : le début doit être inférieur à la fin")
             except (KeyError, TypeError, ValueError):
-                err.append(f"Variable floue {v.get('id')} : bornes invalides")
+                err.append(f"{nom} : définition de la fonction d'appartenance invalide")
     p = kb.get("parametres", {})
     try:
         if not 0 <= float(p.get("seuil_activation")) <= 1:
@@ -367,7 +381,7 @@ def verifier(kb):
             cas = verifier_cas(kb)
             ko = [x for x in cas["lignes"] if not x["ok"]]
             controles.append(_controle(
-                "cas", "Cas de référence (présentation)", f"Les {len(cas['lignes'])} cas de référence donnent le résultat attendu.",
+                "cas", "Cas de référence", f"Les {len(cas['lignes'])} cas de référence donnent le résultat attendu.",
                 None,
                 [f"{x['titre']} : attendu {x['attendu']} ({x['cf_attendu']}), obtenu {x['obtenu']} ({x['cf_obtenu']})" for x in ko]))
         except (ErreurBase, KeyError, ValueError, TypeError, ZeroDivisionError) as e:

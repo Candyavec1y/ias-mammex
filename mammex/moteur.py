@@ -213,7 +213,7 @@ class Moteur:
             if e is None:
                 raise ErreurBase(f"Ensemble flou inconnu « {var} EST {ens} »")
             x = m.valeur_brute(var) if var in m.q else None
-            return dsl.mu_rampe(x, float(e["debut"]), float(e["fin"])), x
+            return dsl.mu_ensemble(x, e), x
 
         def choix(self, qid):
             if qid not in self.m.q:
@@ -655,7 +655,7 @@ class Moteur:
                 if var:
                     x = self.valeur_brute(q["id"])
                     for e in var["ensembles"]:
-                        mu = dsl.mu_rampe(x, float(e["debut"]), float(e["fin"]))
+                        mu = dsl.mu_ensemble(x, e)
                         txt += f" → {e['libelle']} à {round(mu * 100)} %"
             elif q["type"] == "choix":
                 opt = next((o for o in q.get("options", []) if o["id"] == v), None)

@@ -18,6 +18,7 @@ const S = {
   rapport: null,
   essai: null,
   diffs: {},
+  fzTest: {},
   dirty: false,
 };
 
@@ -125,6 +126,7 @@ async function ouvrir() {
 const TABS = [
   ["regles", "Règles", () => S.draft.regles.length],
   ["faits", "Faits et questions", () => S.draft.questions.length + S.draft.faits_intermediaires.length],
+  ["floues", "Variables floues", () => S.draft.variables_floues.length],
   ["controle", "Méta-règles et heuristiques", () => S.draft.meta_regles.length + S.draft.heuristiques.length],
   ["parametres", "Paramètres", null],
   ["verification", "Vérification", null],
@@ -136,7 +138,7 @@ function rendre() {
     `<button class="tab ${S.tab === id ? "active" : ""}" role="tab" aria-selected="${S.tab === id}" data-tab="${id}">${lib}${n ? `<span class="count">${n()}</span>` : ""}</button>`
   ).join("");
   $$("#tabs [data-tab]").forEach((b) => b.addEventListener("click", () => { S.tab = b.dataset.tab; rendre(); }));
-  const f = { regles: rendreRegles, faits: rendreFaits, controle: rendreControle, parametres: rendreParametres, verification: rendreVerification, versions: rendreVersions }[S.tab];
+  const f = { regles: rendreRegles, faits: rendreFaits, floues: rendreFloues, controle: rendreControle, parametres: rendreParametres, verification: rendreVerification, versions: rendreVersions }[S.tab];
   $("#panel").innerHTML = f();
   apresRendu();
 }
@@ -165,7 +167,7 @@ function factsDispo() {
     if (q.type === "oui_non") l.push([q.id, q.libelle || q.texte]);
     if (q.type === "choix") l.push([`${q.id} = ${(q.options || []).map((o) => o.id).join(" | ")}`, q.libelle || q.texte]);
   }
-  for (const v of d.variables_floues) for (const e of v.ensembles) l.push([`${v.id} EST ${e.id}`, `${v.libelle} est ${e.libelle} (flou, ${e.debut}–${e.fin})`]);
+  for (const v of d.variables_floues) for (const e of v.ensembles) l.push([`${v.id} EST ${e.id}`, `${v.libelle} est ${e.libelle} (variable floue)`]);
   for (const f of d.faits_intermediaires) l.push([f.id, f.libelle + " (fait intermédiaire)"]);
   return l;
 }
@@ -273,21 +275,212 @@ function rendreFaits() {
       ${champ("Libellé", `diagnostics.${i}.libelle`, x.libelle)}
       ${select("Gravité (couleur)", `diagnostics.${i}.gravite`, x.gravite, [["rouge", "Rouge · grave"], ["orange", "Orange · à explorer"], ["vert", "Vert · rassurant"]])}
       <button class="btn small ghost danger" style="margin-bottom:2px" data-act="del-diag" data-i="${i}">✕</button></div>`).join("");
-  const floues = d.variables_floues.map((v, i) => `<div class="card rule">
-      <div class="subgrid">${champ("Variable (identifiant de la question)", `variables_floues.${i}.id`, v.id)}${champ("Libellé", `variables_floues.${i}.libelle`, v.libelle)}${champ("Unité", `variables_floues.${i}.unite`, v.unite)}</div>
-      ${v.ensembles.map((e, j) => `<div class="subgrid">${champ("Ensemble", `variables_floues.${i}.ensembles.${j}.id`, e.id)}${champ("Libellé", `variables_floues.${i}.ensembles.${j}.libelle`, e.libelle)}
-        ${champ("μ = 0 jusqu'à", `variables_floues.${i}.ensembles.${j}.debut`, e.debut, { t: "num" })}${champ("μ = 1 à partir de", `variables_floues.${i}.ensembles.${j}.fin`, e.fin, { t: "num" })}</div>`).join("")}
-    </div>`).join("");
   return `
     <p class="section-title">Faits intermédiaires (conclusions du niveau 1)</p>
     <div class="card card-pad" style="margin-bottom:8px">${inter}<button class="btn small" style="margin-top:10px" data-act="add-inter">+ Ajouter un fait intermédiaire</button></div>
     <p class="section-title" style="margin-top:20px">Diagnostics (conclusions du niveau 2)</p>
     <div class="card card-pad" style="margin-bottom:8px">${diags}<button class="btn small" style="margin-top:10px" data-act="add-diag">+ Ajouter un diagnostic</button></div>
-    <p class="section-title" style="margin-top:20px">Variables floues</p>
-    ${floues}
     <div class="ed-bar" style="margin-top:20px"><p class="section-title" style="margin:0">Questions posées au médecin (dans l'ordre de la consultation)</p><span class="spacer"></span>
       <button class="btn small" data-act="add-question">+ Ajouter une question</button></div>
     ${qs}`;
+}
+
+/* ------------------------------------------------------------------ variables floues */
+const FORMES = {
+  croissante: { lib: "Croissante (rampe ↗)", mus: [0, 1], params: ["μ = 0 jusqu'à", "μ = 1 à partir de"] },
+  decroissante: { lib: "Décroissante (rampe ↘)", mus: [1, 0], params: ["μ = 1 jusqu'à", "μ = 0 à partir de"] },
+  triangle: { lib: "Triangulaire", mus: [0, 1, 0], params: ["μ = 0 jusqu'à", "μ = 1 au sommet", "μ = 0 à partir de"] },
+  trapeze: { lib: "Trapézoïdale", mus: [0, 1, 1, 0], params: ["μ = 0 jusqu'à", "μ = 1 de", "μ = 1 jusqu'à", "μ = 0 à partir de"] },
+  points: { lib: "Points libres (linéaire par morceaux)" },
+};
+const COULEURS_FZ = ["var(--accent)", "#6a1b9a", "#1565c0", "#00897b", "#ef6c00"];
+
+// points [[x, μ], …] d'un ensemble ; l'ancien format debut / fin est une rampe croissante
+const ptsEns = (e) => (e.points?.length ? e.points.map(([x, m]) => [Number(x), Number(m)]) : [[Number(e.debut), 0], [Number(e.fin), 1]]);
+const formeEns = (e) => (FORMES[e.forme] ? e.forme : e.points ? "points" : "croissante");
+function muPts(x, pts) {
+  if (x === null || x === undefined || x === "" || isNaN(x) || !pts.length) return null;
+  if (x <= pts[0][0]) return pts[0][1];
+  for (let k = 1; k < pts.length; k++) {
+    const [x0, m0] = pts[k - 1], [x1, m1] = pts[k];
+    if (x <= x1) return x1 === x0 ? m1 : m0 + ((m1 - m0) * (x - x0)) / (x1 - x0);
+  }
+  return pts.at(-1)[1];
+}
+function erreursEns(e) {
+  const pts = ptsEns(e);
+  if (pts.some(([x, m]) => isNaN(x) || isNaN(m))) return "Toutes les valeurs doivent être renseignées.";
+  if (pts.length < 2) return "Au moins deux points sont nécessaires.";
+  if (pts.some(([x], k) => k && x <= pts[k - 1][0])) return "Les abscisses doivent être strictement croissantes.";
+  if (pts.some(([, m]) => m < 0 || m > 1)) return "μ doit être compris entre 0 et 1.";
+  return "";
+}
+const nb = (x) => String(Math.round(x * 1000) / 1000).replace(".", ",");
+function formule(e, unite) {
+  const pts = ptsEns(e);
+  if (erreursEns(e)) return "";
+  const l = [`μ(x) = ${nb(pts[0][1])}  si x ≤ ${nb(pts[0][0])}`];
+  for (let k = 1; k < pts.length; k++) {
+    const [x0, m0] = pts[k - 1], [x1, m1] = pts[k], w = nb(x1 - x0);
+    let f;
+    if (m0 === m1) f = nb(m0);
+    else if (m0 === 0 && m1 === 1) f = `(x − ${nb(x0)}) / ${w}`;
+    else if (m0 === 1 && m1 === 0) f = `(${nb(x1)} − x) / ${w}`;
+    else f = `${nb(m0)} ${m1 > m0 ? "+" : "−"} ${nb(Math.abs(m1 - m0))} × (x − ${nb(x0)}) / ${w}`;
+    l.push(`μ(x) = ${f}  si ${nb(x0)} < x ≤ ${nb(x1)}`);
+  }
+  l.push(`μ(x) = ${nb(pts.at(-1)[1])}  si x > ${nb(pts.at(-1)[0])}`);
+  return l.join("\n") + (unite ? `\n(x en ${unite})` : "");
+}
+function domaine(v) {
+  const xs = v.ensembles.flatMap((e) => ptsEns(e).map(([x]) => x)).filter((x) => !isNaN(x));
+  let lo = Number(v.min), hi = Number(v.max);
+  if (v.min === undefined || v.min === "" || isNaN(lo)) lo = xs.length ? Math.min(...xs) - 10 : 0;
+  if (v.max === undefined || v.max === "" || isNaN(hi)) hi = xs.length ? Math.max(...xs) + 10 : 100;
+  if (hi <= lo) hi = lo + 1;
+  return [lo, hi];
+}
+function svgFonction(v, testX) {
+  const W = 560, H = 240, L = 40, R = 16, T = 14, B = 36;
+  const [lo, hi] = domaine(v);
+  const px = (x) => L + ((x - lo) / (hi - lo)) * (W - L - R);
+  const py = (m) => T + (1 - m) * (H - T - B);
+  const brut = (hi - lo) / 8, p10 = 10 ** Math.floor(Math.log10(brut));
+  const pas = [1, 2, 5, 10].map((k) => k * p10).find((k) => k >= brut);
+  let g = "";
+  for (const m of [0, 0.5, 1]) g += `<line x1="${L}" x2="${W - R}" y1="${py(m)}" y2="${py(m)}" stroke="var(--line)" ${m ? 'stroke-dasharray="3 3"' : ""}/>
+    <text x="${L - 8}" y="${py(m) + 4}" text-anchor="end" font-size="11" fill="var(--faint)">${nb(m)}</text>`;
+  for (let x = Math.ceil(lo / pas) * pas; x <= hi + 1e-9; x += pas) g += `<line x1="${px(x)}" x2="${px(x)}" y1="${py(0)}" y2="${py(0) + 4}" stroke="var(--line-strong)"/>
+    <text x="${px(x)}" y="${py(0) + 17}" text-anchor="middle" font-size="11" fill="var(--faint)">${nb(x)}</text>`;
+  g += `<text x="${W - R}" y="${H - 3}" text-anchor="end" font-size="11" fill="var(--muted)">${esc(v.libelle || v.id)}${v.unite ? ` (${esc(v.unite)})` : ""}</text>
+    <text x="${L - 8}" y="${T - 2}" text-anchor="end" font-size="11" fill="var(--muted)">μ</text>`;
+  let courbes = "", test = "";
+  v.ensembles.forEach((e, j) => {
+    if (erreursEns(e)) return;
+    const pts = ptsEns(e), c = COULEURS_FZ[j % COULEURS_FZ.length];
+    const xs = [lo, ...pts.map(([x]) => x).filter((x) => x > lo && x < hi), hi];
+    const ligne = xs.map((x) => `${px(x).toFixed(1)},${py(muPts(x, pts)).toFixed(1)}`).join(" ");
+    courbes += `<polygon points="${px(lo)},${py(0)} ${ligne} ${px(hi)},${py(0)}" fill="${c}" opacity=".08"/>
+      <polyline points="${ligne}" fill="none" stroke="${c}" stroke-width="2.2" stroke-linejoin="round"/>
+      ${pts.filter(([x]) => x >= lo && x <= hi).map(([x, m]) => `<circle cx="${px(x)}" cy="${py(m)}" r="3.5" fill="#fff" stroke="${c}" stroke-width="2"/>`).join("")}`;
+    const mu = muPts(testX, pts);
+    if (mu !== null && testX >= lo && testX <= hi) test += `<circle cx="${px(testX)}" cy="${py(mu)}" r="5" fill="${c}"/>
+      <text x="${px(testX) + 8}" y="${py(mu) - 6}" font-size="12" font-weight="600" fill="${c}">${nb(Math.round(mu * 100) / 100)}</text>`;
+  });
+  if (test) test = `<line x1="${px(testX)}" x2="${px(testX)}" y1="${py(0)}" y2="${py(1) - 6}" stroke="var(--text)" stroke-dasharray="4 3" opacity=".5"/>` + test;
+  const legende = v.ensembles.map((e, j) => `<span><i style="background:${COULEURS_FZ[j % COULEURS_FZ.length]}"></i>${esc(e.libelle || e.id)}</span>`).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" class="fz-svg" role="img" aria-label="Fonctions d'appartenance de ${esc(v.libelle || v.id)}">${g}${courbes}${test}</svg>
+    <div class="fz-legend">${legende}</div>`;
+}
+function resultatTest(v, x) {
+  if (x === null || x === undefined || x === "" || isNaN(x)) return '<span class="muted">Saisissez une valeur pour lire les degrés d\'appartenance.</span>';
+  return v.ensembles.filter((e) => !erreursEns(e)).map((e) => {
+    const mu = muPts(Number(x), ptsEns(e));
+    return `<span class="fz-res"><b>μ<sub>${esc(e.libelle || e.id)}</sub>(${nb(Number(x))}) = ${nb(Math.round(mu * 1000) / 1000)}</b> · ${Math.round(mu * 100)} %</span>`;
+  }).join("");
+}
+function fzNum(lib, path, val, i, { step = 1, attrs = "" } = {}) {
+  return `<div class="field"><label>${lib}</label><input type="number" step="${step}" data-p="${path}" data-t="num" data-fz="${i}" value="${esc(val)}" ${attrs}></div>`;
+}
+
+function rendreFloues() {
+  const d = S.draft;
+  // conversion silencieuse de l'ancien format (debut / fin) vers des points éditables
+  for (const v of d.variables_floues) for (const e of v.ensembles) if (!e.points?.length) {
+    e.points = ptsEns(e);
+    e.forme = "croissante";
+    delete e.debut;
+    delete e.fin;
+    marquer();
+  }
+  const nombres = d.questions.filter((q) => q.type === "nombre").map((q) => [q.id, `${q.libelle || q.texte} (${q.id})`]);
+  const cartes = d.variables_floues.map((v, i) => {
+    const p = `variables_floues.${i}`;
+    const vars = nombres.some(([id]) => id === v.id) ? nombres : [[v.id, `${v.id} (question inconnue)`], ...nombres];
+    const ensembles = v.ensembles.map((e, j) => {
+      const pe = `${p}.ensembles.${j}`, f = formeEns(e), pts = ptsEns(e), c = COULEURS_FZ[j % COULEURS_FZ.length];
+      const params = f === "points"
+        ? `<table class="fz-pts"><thead><tr><th>x${v.unite ? ` (${esc(v.unite)})` : ""}</th><th>μ(x)</th><th></th></tr></thead><tbody>
+            ${pts.map(([x, m], k) => `<tr>
+              <td><input type="number" step="1" data-p="${pe}.points.${k}.0" data-t="num" data-fz="${i}" value="${esc(x)}" aria-label="x du point ${k + 1}"></td>
+              <td><input type="number" step="0.05" min="0" max="1" data-p="${pe}.points.${k}.1" data-t="num" data-fz="${i}" value="${esc(m)}" aria-label="μ du point ${k + 1}"></td>
+              <td><button class="btn small ghost danger" data-act="fz-del-pt" data-i="${i}" data-j="${j}" data-k="${k}" ${pts.length <= 2 ? "disabled" : ""} aria-label="Supprimer le point">✕</button></td></tr>`).join("")}
+            </tbody></table>
+            <button class="btn small ghost" data-act="fz-add-pt" data-i="${i}" data-j="${j}">+ Ajouter un point</button>`
+        : `<div class="fz-params">${FORMES[f].params.map((lib, k) => fzNum(`${lib}${v.unite ? ` (${esc(v.unite)})` : ""}`, `${pe}.points.${k}.0`, pts[k]?.[0], i)).join("")}</div>`;
+      return `<div class="fz-ens" style="--c:${c}">
+        <div class="fz-ens-head"><i class="fz-dot"></i><b>Ensemble « ${esc(e.libelle || e.id)} »</b><span class="spacer"></span>
+          <button class="btn small ghost danger" data-act="fz-del-ens" data-i="${i}" data-j="${j}" ${v.ensembles.length <= 1 ? "disabled" : ""}>Supprimer</button></div>
+        <div class="fz-row">
+          ${champ("Identifiant (utilisé dans les règles)", `${pe}.id`, e.id, { attrs: `data-fz="${i}" spellcheck="false"` })}
+          ${champ("Libellé", `${pe}.libelle`, e.libelle, { attrs: `data-fz="${i}"` })}
+          <div class="field"><label>Forme de la fonction</label><select data-p="${pe}.forme" data-t="text" data-fz-forme="${i}.${j}">
+            ${Object.entries(FORMES).map(([id, x]) => opt(id, x.lib, f)).join("")}</select></div>
+        </div>
+        ${params}
+        <div class="check ko" data-fz-err="${i}.${j}">${esc(erreursEns(e))}</div>
+        <p class="fz-usage">Dans une prémisse : <span class="mono">${esc(v.id)} EST ${esc(e.id)}</span></p>
+        <pre class="fz-formule" data-fz-formule="${i}.${j}">${esc(formule(e, v.unite))}</pre>
+      </div>`;
+    }).join("");
+    const t = S.fzTest[i] ?? "";
+    return `<div class="card fz-card">
+      <div class="fz-top">
+        ${select("Variable (question numérique)", `${p}.id`, v.id, vars, { rerender: true })}
+        ${champ("Libellé", `${p}.libelle`, v.libelle, { attrs: `data-fz="${i}"` })}
+        ${champ("Unité", `${p}.unite`, v.unite, { attrs: `data-fz="${i}"` })}
+        ${fzNum("Axe : de", `${p}.min`, v.min ?? "", i)}
+        ${fzNum("à", `${p}.max`, v.max ?? "", i)}
+      </div>
+      <div class="fz-body">
+        <div class="fz-editors">${ensembles}
+          <button class="btn small" data-act="fz-add-ens" data-i="${i}">+ Ajouter un ensemble flou</button></div>
+        <div class="fz-side">
+          <div class="fz-chart" data-fz-chart="${i}">${svgFonction(v, t === "" ? null : Number(t))}</div>
+          <div class="fz-test">
+            <label for="fz-test-${i}">Tester une valeur</label>
+            <div class="fz-test-row"><input id="fz-test-${i}" type="number" step="1" data-fz-test="${i}" value="${esc(t)}" placeholder="${esc(v.unite || "valeur")}">
+              <div data-fz-res="${i}">${resultatTest(v, t)}</div></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+  return `
+    <p class="muted" style="font-size:13.5px;margin:0 0 14px;max-width:80ch">Une variable floue convertit une donnée numérique (l'âge, par exemple)
+      en degré d'appartenance μ compris entre 0 et 1, utilisé comme facteur de certitude dans les prémisses (<span class="mono">age EST agee</span>).
+      Choisissez une forme puis ses seuils, ou définissez librement la fonction point par point : μ est interpolé linéairement entre les points
+      et reste constant avant le premier et après le dernier.</p>
+    ${cartes || '<div class="empty">Aucune variable floue.</div>'}`;
+}
+
+// mise à jour en place (sans perdre le focus) du graphique, des formules et du test
+function majFlou(i) {
+  const v = S.draft.variables_floues[i];
+  if (!v) return;
+  const t = S.fzTest[i] ?? "";
+  const ch = $(`[data-fz-chart="${i}"]`);
+  if (ch) ch.innerHTML = svgFonction(v, t === "" ? null : Number(t));
+  const res = $(`[data-fz-res="${i}"]`);
+  if (res) res.innerHTML = resultatTest(v, t);
+  v.ensembles.forEach((e, j) => {
+    const f = $(`[data-fz-formule="${i}.${j}"]`);
+    if (f) f.textContent = formule(e, v.unite);
+    const er = $(`[data-fz-err="${i}.${j}"]`);
+    if (er) er.textContent = erreursEns(e);
+  });
+}
+
+// nouvelle forme : on régénère les points sur la plage actuelle
+function changerForme(e, forme) {
+  const xs = ptsEns(e).map(([x]) => x).filter((x) => !isNaN(x));
+  let lo = xs.length ? Math.min(...xs) : 0, hi = xs.length ? Math.max(...xs) : 10;
+  if (hi <= lo) hi = lo + 10;
+  const r = (x) => (hi - lo >= 10 ? Math.round(x) : Math.round(x * 10) / 10);
+  e.forme = forme;
+  if (forme === "points") return;
+  const n = FORMES[forme].mus.length;
+  e.points = FORMES[forme].mus.map((m, k) => [r(lo + ((hi - lo) * k) / (n - 1)), m]);
 }
 
 /* ------------------------------------------------------------------ méta-règles et heuristiques */
@@ -452,6 +645,21 @@ async function action(b) {
     const arr = b.dataset.path.split(".").reduce((o, k) => o[/^\d+$/.test(k) ? +k : k], d);
     if (a === "add-cond") arr.push({ fait: d.faits_intermediaires[0]?.id, seuil: 0.4 });
     else arr.splice(i, 1);
+  } else if (a.startsWith("fz-")) {
+    const v = d.variables_floues[i], j = +b.dataset.j;
+    if (a === "fz-add-ens") {
+      const [lo, hi] = domaine(v);
+      const n = v.ensembles.length + 1;
+      v.ensembles.push({ id: `ensemble_${n}`, libelle: `ensemble ${n}`, forme: "croissante",
+        points: [[Math.round(lo + (hi - lo) / 3), 0], [Math.round(lo + (2 * (hi - lo)) / 3), 1]] });
+    } else if (a === "fz-del-ens") {
+      if (!confirm(`Supprimer l'ensemble « ${v.ensembles[j].libelle || v.ensembles[j].id} » ? Les règles qui l'utilisent seront signalées par la vérification.`)) return;
+      v.ensembles.splice(j, 1);
+    } else if (a === "fz-add-pt") {
+      const e = v.ensembles[j], pts = ptsEns(e), [x, m] = pts.at(-1);
+      e.points = [...pts, [x + 10, m]];
+      e.forme = "points";
+    } else if (a === "fz-del-pt") v.ensembles[j].points.splice(+b.dataset.k, 1);
   } else if (a === "verifier") return verifier();
   else if (a === "essayer") return essayer();
   else if (a === "diff") {
@@ -493,6 +701,17 @@ function lireValeur(el) {
 
 function surSaisie(e) {
   const el = e.target;
+  if (el.dataset?.fzTest !== undefined) {
+    S.fzTest[el.dataset.fzTest] = el.value;
+    return majFlou(+el.dataset.fzTest);
+  }
+  if (el.dataset?.fzForme !== undefined) {
+    if (e.type !== "change") return;
+    const [i, j] = el.dataset.fzForme.split(".").map(Number);
+    changerForme(S.draft.variables_floues[i].ensembles[j], el.value);
+    marquer();
+    return rendre();
+  }
   if (!el.dataset || !el.dataset.p) return;
   if (el.dataset.t === "conditions") {
     const q = el.dataset.p.split(".").reduce((o, k) => o[/^\d+$/.test(k) ? +k : k], S.draft);
@@ -515,6 +734,7 @@ function surSaisie(e) {
     clearTimeout(minuteurs[el.dataset.p]);
     minuteurs[el.dataset.p] = setTimeout(() => analyser(el), 300);
   }
+  if (el.dataset.fz !== undefined) majFlou(+el.dataset.fz);
   if (e.type === "change" && el.dataset.rerender !== undefined) rendre();
 }
 $("#panel").addEventListener("input", surSaisie);
